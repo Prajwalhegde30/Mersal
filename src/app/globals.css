@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+
+:root {
+  --bg-color: #0d0d0d;
+  --text-color: #ffffff;
+  --primary: #00ff41;
+  --secondary: #00e5ff;
+  
+  /* Liquid Glass theme variables */
+  --liquid-glass-bg: rgba(255, 255, 255, 0.05);
+  --liquid-glass-highlight: rgba(255, 255, 255, 0.2);
+  --border-color: #00ff41;
+  --border-width: 3px;
+  --shadow-color: #00ff41;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+@keyframes liquidBlob {
+  0% { transform: scale(1) translate(0, 0) rotate(0deg); border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+  33% { transform: scale(1.1) translate(20px, -30px) rotate(15deg); border-radius: 60% 40% 50% 50% / 40% 60% 50% 50%; }
+  66% { transform: scale(0.9) translate(-20px, 30px) rotate(-15deg); border-radius: 50% 50% 60% 40% / 50% 50% 40% 60%; }
+  100% { transform: scale(1) translate(0, 0) rotate(0deg); border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated Liquid Background Blobs */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.3;
+  animation: liquidBlob 15s infinite ease-in-out alternate;
+}
+
+body::before {
+  top: -10%;
+  left: -10%;
+  background: var(--primary);
+  animation-delay: -5s;
+}
+
+body::after {
+  bottom: -10%;
+  right: -10%;
+  background: var(--secondary);
+}
+
+/* Brutalist + Liquid Glass Utility Classes */
+.brutal-glass {
+  background: var(--liquid-glass-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 6px 6px 0px var(--shadow-color), inset 0px 0px 20px rgba(0, 255, 65, 0.1);
+  border-radius: 0; /* Brutalist sharp edges */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Liquid highlight sheen */
+.brutal-glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, transparent, var(--liquid-glass-highlight), transparent);
+  transform: skewX(-20deg);
+  transition: all 0.5s;
+}
+
+.brutal-glass:hover::before {
+  left: 200%;
+  transition: all 0.8s;
+}
+
+.brutal-glass:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 9px 9px 0px var(--shadow-color), inset 0px 0px 30px rgba(0, 255, 65, 0.2);
+}
+
+.brutal-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: inherit;
+  font-size: 1rem;
+  background: rgba(0,0,0,0.5);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-color);
+  outline: none;
+  transition: all 0.2s;
+  box-shadow: 3px 3px 0px var(--shadow-color);
+}
+
+.brutal-input:focus {
+  border-color: var(--secondary);
+  box-shadow: 3px 3px 0px var(--secondary);
+  background: rgba(0, 229, 255, 0.1);
+}
+
+.brutal-button {
+  display: inline-block;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  background: var(--primary);
+  color: #000;
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: 5px 5px 0px var(--shadow-color);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.brutal-button::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.brutal-button:active::after {
+  opacity: 1;
+  transform: scale(1);
+  transition: 0s;
+}
+
+.brutal-button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0px var(--shadow-color);
+  background: var(--secondary);
+  border-color: var(--secondary);
+}
+
+.brutal-button:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0px var(--shadow-color);
+}
+
+.brutal-button.secondary {
+  background: transparent;
+  color: var(--primary);
+}
+
+.brutal-button.secondary:hover {
+  background: var(--primary);
+  color: #000;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-left: 2px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 2px solid var(--border-color);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}
