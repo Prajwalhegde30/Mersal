@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mersal - Documentation</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #050505;
+      --text-color: #e0e0e0;
+      --primary: #00ff41;
+      --secondary: #00e5ff;
+      --accent: #ff3366;
+      --liquid-glass-bg: rgba(10, 10, 10, 0.7);
+    }
+
+    * { box-sizing: border-box; padding: 0; margin: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      line-height: 1.6;
+      /* Dense Cyber-grid background */
+      background-image: 
+        linear-gradient(rgba(0, 255, 65, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Gritty Noise Overlay */
+    .noise-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.15;
+      background: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)"/%3E%3C/svg%3E');
+    }
+
+    /* Scanner Line */
+    .scanner-line {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: var(--primary);
+      box-shadow: 0 0 15px var(--primary);
+      opacity: 0.2;
+      z-index: 9998;
+      pointer-events: none;
+      animation: scan 8s linear infinite;
+    }
+    @keyframes scan {
+      0% { top: -10%; opacity: 0; }
+      10% { opacity: 0.5; }
+      90% { opacity: 0.5; }
+      100% { top: 110%; opacity: 0; }
+    }
+
+    header {
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(0,255,65,0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.8);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+    .nav-links a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 30px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: var(--primary); }
+
+    .layout {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      gap: 40px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 100px;
+      height: calc(100vh - 140px);
+      border-right: 1px solid rgba(255,255,255,0.1);
+      padding-right: 20px;
+    }
+    .sidebar ul { list-style: none; }
+    .sidebar li { margin-bottom: 15px; }
+    .sidebar a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 1.05rem;
+      display: block;
+      padding: 5px 10px;
+      border-left: 2px solid transparent;
+      transition: all 0.3s;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      color: var(--primary);
+      border-left-color: var(--primary);
+      background: rgba(0, 255, 65, 0.05);
+    }
+
+    /* Content Area */
+    .content {
+      flex-grow: 1;
+      background: var(--liquid-glass-bg);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 50px;
+      border-top: 4px solid var(--secondary);
+    }
+
+    .content h1 { font-size: 3rem; color: #fff; margin-bottom: 20px; text-transform: uppercase; }
+    .content h2 { font-size: 2rem; color: var(--secondary); margin: 50px 0 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
+    .content h3 { font-size: 1.4rem; color: #fff; margin: 30px 0 15px; }
+    
+    .content p { font-size: 1.1rem; color: rgba(255,255,255,0.8); margin-bottom: 20px; }
+    .content ul { margin-bottom: 20px; padding-left: 20px; color: rgba(255,255,255,0.8); }
+    .content li { margin-bottom: 10px; }
+
+    /* Code Blocks */
+    pre {
+      background: #030303;
+      padding: 25px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-left: 3px solid var(--accent);
+      overflow-x: auto;
+      font-family: 'Fira Code', monospace;
+      color: #a9b7c6;
+      margin: 20px 0;
+      position: relative;
+    }
+    pre code { color: var(--primary); font-size: 0.95rem; }
+    
+    .alert {
+      padding: 20px;
+      border-left: 4px solid var(--primary);
+      background: rgba(0, 255, 65, 0.05);
+      margin: 20px 0;
+    }
+    .alert-warning {
+      border-left-color: #ffaa00;
+      background: rgba(255, 170, 0, 0.05);
+    }
+
+    @media (max-width: 900px) {
+      .layout { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="noise-overlay"></div>
+  <div class="scanner-line"></div>
+
+  <header>
+    <a href="index.html" class="logo">Mersal</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="docs.html">Docs</a>
+      <a href="https://github.com" target="_blank">GitHub</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar">
+      <ul>
+        <li><a href="#intro" class="active">Introduction</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#deployment">Docker Deployment</a></li>
+        <li><a href="#env-vars">Environment Variables</a></li>
+        <li><a href="#usage">Usage & Commands</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </nav>
+
+    <main class="content">
+      <section id="intro">
+        <h1>Documentation</h1>
+        <p>Mersal is a self-hosted, autonomous SQL agent powered by LLMs. It directly interacts with your PostgreSQL/Neon databases via a conversational interface, automatically generating DDL and DML queries based on plain-language prompts.</p>
+        
+        <div class="alert">
+          <strong>Core Philosophy:</strong> Mersal is designed to be completely air-gapped from cloud data platforms. Your database connection string remains strictly within your local environment or cluster.
+        </div>
+      </section>
+
+      <section id="architecture">
+        <h2>Architecture</h2>
+        <p>The system consists of three primary layers:</p>
+        <ul>
+          <li><strong>UI / Terminal:</strong> A Next.js (React) front-end providing a chat interface and live schema visualizer.</li>
+          <li><strong>Context Engine (Next.js API Routes):</strong> Intercepts commands, fetches the current DB schema (`pg_catalog`), and constructs augmented prompts for the LLM.</li>
+          <li><strong>Execution Engine:</strong> Safely executes the returned SQL payloads directly against your database, returning structured output back to the UI.</li>
+        </ul>
+      </section>
+
+      <section id="deployment">
+        <h2>Docker Deployment</h2>
+        <p>The easiest way to run Mersal is via our pre-built GitHub Container Registry (GHCR) images. This ensures you have the production-ready build with no local dependencies required (other than Docker).</p>
+        
+        <h3>1. Pull the Image</h3>
+        <pre><code>docker pull ghcr.io/&lt;YOUR_USERNAME&gt;/mersal:latest</code></pre>
+        
+        <h3>2. Run the Container</h3>
+        <pre><code>docker run -d \
+  -p 3000:3000 \
+  -e OPENROUTER_API_KEY=your_openrouter_key \
+  -e DATABASE_URL=postgresql://user:pass@host:5432/db \
+  --name mersal-agent \
+  ghcr.io/&lt;YOUR_USERNAME&gt;/mersal:latest</code></pre>
+        
+        <p>Navigate to <code>http://localhost:3000</code> in your browser to access the agent.</p>
+      </section>
+
+      <section id="env-vars">
+        <h2>Environment Variables</h2>
+        <p>Mersal relies on a few critical environment variables to function correctly. These can be passed via Docker or placed in a <code>.env</code> file if running locally.</p>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #fff;">
+            <tr style="border-bottom: 2px solid var(--secondary); text-align: left;">
+              <th style="padding: 10px;">Variable</th>
+              <th style="padding: 10px;">Required</th>
+              <th style="padding: 10px;">Description</th>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <td style="padding: 10px; color: var(--primary);"><code>OPENROUTER_API_KEY</code></td>
+              <td style="padding: 10px;">Yes*</td>
+              <td style="padding: 10px;">API key for OpenRouter to access LLMs. Can also be set in the UI settings panel.</td>
+            </tr>
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <td style="padding: 10px; color: var(--primary);"><code>DATABASE_URL</code></td>
+              <td style="padding: 10px;">Yes*</td>
+              <td style="padding: 10px;">Full PostgreSQL connection URI. Can also be set in the UI settings panel.</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+
+      <section id="usage">
+        <h2>Usage & Commands</h2>
+        <p>Once deployed, you can interact with Mersal as you would a human database administrator.</p>
+        
+        <h3>Examples:</h3>
+        <ul>
+          <li><strong>Data Retrieval:</strong> <em>"Fetch the top 10 users who signed up this week."</em></li>
+          <li><strong>Schema Modification (DDL):</strong> <em>"Create a new table for 'products' with title, price, and a foreign key to categories."</em></li>
+          <li><strong>Analysis:</strong> <em>"What is the average price of products in the electronics category?"</em></li>
+        </ul>
+        
+        <div class="alert alert-warning">
+          <strong>Warning:</strong> Mersal executes raw SQL against the provided database. It is highly recommended to run this agent against a staging environment or a branch (if using Neon DB) before executing commands against production data.
+        </div>
+      </section>
+
+      <section id="troubleshooting">
+        <h2>Troubleshooting</h2>
+        <h3>Unformatted Data Output</h3>
+        <p>If the agent returns raw JSON instead of a formatted table, this means the LLM returned data in an unexpected structure. Ensure your prompt clearly specifies you want data queried from the database.</p>
+        
+        <h3>Connection Errors</h3>
+        <p>Verify your <code>DATABASE_URL</code>. If using Docker on Windows/Mac to connect to a local database, use <code>host.docker.internal</code> instead of <code>localhost</code>.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Simple smooth scrolling and active state update for sidebar
+    document.querySelectorAll('.sidebar a').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>
