@@ -6,6 +6,7 @@ import { useSettings } from "@/context/SettingsContext";
 import SettingsModal from "./SettingsModal";
 import DirectoryScanner from "./DirectoryScanner";
 import AgentChat from "./AgentChat";
+import SchemaVisualizer from "./SchemaVisualizer";
 
 export default function Dashboard() {
   const { logout, settings } = useSettings();
@@ -60,7 +61,7 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: "30px", maxWidth: "1400px", margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "350px 1fr", gap: "30px" }}>
+      <main style={{ flex: 1, padding: "30px", maxWidth: "1800px", margin: "0 auto", width: "100%", display: "grid", gridTemplateColumns: "300px 1fr 400px", gap: "30px" }}>
         {/* Sidebar */}
         <div>
           <DirectoryScanner onScanComplete={handleScanComplete} />
@@ -93,6 +94,11 @@ export default function Dashboard() {
         {/* Chat Area */}
         <div>
           <AgentChat contextSummary={contextSummary} />
+        </div>
+
+        {/* Schema Area */}
+        <div>
+          <SchemaVisualizer />
         </div>
       </main>
 

@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Docker Deployment (GHCR)
+
+You can pull and run the Mersal SQL Agent directly from the GitHub Container Registry:
+
+```bash
+# Pull the latest Mersal image
+docker pull ghcr.io/<YOUR_GITHUB_USERNAME>/mersal:latest
+
+# Run the container
+docker run -d -p 3000:3000 --name mersal-agent ghcr.io/<YOUR_GITHUB_USERNAME>/mersal:latest
+```
+
+*Replace `<YOUR_GITHUB_USERNAME>` with the actual registry namespace.*

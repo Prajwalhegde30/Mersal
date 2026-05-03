@@ -19,6 +19,11 @@ export default function AgentChat({ contextSummary }: { contextSummary: string }
   const [isLoading, setIsLoading] = useState(false);
   const { settings } = useSettings();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<Message[]>(messages);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -28,34 +33,70 @@ export default function AgentChat({ contextSummary }: { contextSummary: string }
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const [dbSchemaContext, setDbSchemaContext] = useState<string>("");
 
+  useEffect(() => {
+    if (settings.neonDbUrl) {
+      fetch("/api/schema", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.schema) {
+          let schemaStr = "Database Schema Context:\n";
+          Object.entries(data.schema).forEach(([tableName, columns]: [string, any]) => {
+            schemaStr += `Table '${tableName}': ` + columns.map((c: any) => `${c.columnName} (${c.dataType})`).join(", ") + "\n";
+          });
+          setDbSchemaContext(schemaStr);
+        }
+      })
+      .catch(console.error);
+    }
+  }, [settings.neonDbUrl]);
+
+  const errorCountRef = useRef(0);
+  const [retryPrompt, setRetryPrompt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (retryPrompt && !isLoading) {
+      const promptToRun = retryPrompt;
+      setRetryPrompt(null);
+      triggerSend(promptToRun);
+    }
+  }, [retryPrompt, isLoading]);
+
+  const triggerSend = async (textToSend: string) => {
     if (!settings.openRouterKey || !settings.neonDbUrl) {
       setMessages(prev => [...prev, { role: "system", content: "ERROR: OpenRouter API Key or Neon DB URL is missing in Settings." }]);
       return;
     }
 
-    const newMessages = [...messages, { role: "user" as const, content: input }];
+    const newMessages = [...messagesRef.current, { role: "user" as const, content: textToSend }];
     setMessages(newMessages);
+    
     setInput("");
     setIsLoading(true);
+    
+    // Perform fetch outside of setState to avoid React StrictMode double execution
+    performFetch(newMessages);
+  };
 
+  const performFetch = async (currentMessages: Message[]) => {
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: newMessages,
+          messages: currentMessages,
           settings,
-          contextSummary
+          contextSummary,
+          dbSchemaContext
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to communicate with agent.");
-      }
+      if (!res.ok) throw new Error("Failed to communicate with agent.");
 
       const data = await res.json();
       setMessages(prev => [...prev, { 
@@ -64,11 +105,35 @@ export default function AgentChat({ contextSummary }: { contextSummary: string }
         dbLogs: data.dbLogs,
         dbData: data.dbData
       }]);
+
+      // Auto-feed error logic
+      if (data.dbData && data.dbData.some((d: any) => d.error)) {
+        errorCountRef.current += 1;
+        if (errorCountRef.current <= 3) {
+          const errs = data.dbData.filter((d: any) => d.error).map((d: any) => d.error).join(" | ");
+          const autoPrompt = `[System Auto-Feed]: Execution failed with error: ${errs}\nPlease correct the SQL query and try again.`;
+          setTimeout(() => setRetryPrompt(autoPrompt), 1500);
+        } else {
+          setMessages(prev => [...prev, { role: "system", content: "SYSTEM HALT: Max auto-retries (3) reached. Awaiting manual override." }]);
+          errorCountRef.current = 0; // reset
+        }
+      } else {
+        errorCountRef.current = 0; // reset on success
+      }
+
     } catch (err: any) {
       setMessages(prev => [...prev, { role: "system", content: `ERROR: ${err.message}` }]);
+      errorCountRef.current = 0;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+    errorCountRef.current = 0; // reset manual send
+    triggerSend(input);
   };
 
   return (
@@ -130,17 +195,33 @@ export default function AgentChat({ contextSummary }: { contextSummary: string }
               {msg.dbData && msg.dbData.length > 0 && (
                 <div style={{ background: "var(--glass-bg)", border: "2px solid #00ff41", boxShadow: "3px 3px 0px #000", padding: "10px", fontSize: "0.85rem", overflowX: "auto" }}>
                   <div style={{ borderBottom: "1px solid #00ff41", paddingBottom: "5px", marginBottom: "8px", fontWeight: "bold", color: "#00ff41" }}>DATA OUTPUT</div>
-                  {msg.dbData.map((dataObj, i) => (
-                    <div key={i} style={{ marginBottom: "10px" }}>
-                      {dataObj.status && <div style={{ color: "#00e5ff" }}>{dataObj.status}</div>}
-                      {dataObj.error && <div style={{ color: "#ff3366" }}>ERROR: {dataObj.error}</div>}
-                      {dataObj.rows && dataObj.rows.length > 0 && (
-                        <pre style={{ background: "rgba(0,0,0,0.5)", padding: "10px", margin: "5px 0", color: "#fff", borderLeft: "2px solid #00ff41" }}>
-                          {JSON.stringify(dataObj.rows, null, 2)}
-                        </pre>
-                      )}
-                    </div>
-                  ))}
+                  {msg.dbData.map((dataObj, i) => {
+                    const hasStatus = dataObj.status !== undefined;
+                    const hasError = dataObj.error !== undefined;
+                    const hasRows = Array.isArray(dataObj.rows) && dataObj.rows.length > 0;
+                    
+                    if (!hasStatus && !hasError && !hasRows) {
+                      return (
+                        <div key={i} style={{ marginBottom: "10px" }}>
+                          <pre style={{ background: "rgba(0,0,0,0.5)", padding: "10px", color: "#ffaa00", borderLeft: "2px solid #ffaa00", whiteSpace: "pre-wrap" }}>
+                            Unparsed Data: {JSON.stringify(dataObj, null, 2)}
+                          </pre>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={i} style={{ marginBottom: "10px" }}>
+                        {hasStatus && <div style={{ color: "#00e5ff" }}>{dataObj.status}</div>}
+                        {hasError && <div style={{ color: "#ff3366" }}>ERROR: {dataObj.error}</div>}
+                        {hasRows && (
+                          <pre style={{ background: "rgba(0,0,0,0.5)", padding: "10px", margin: "5px 0", color: "#fff", borderLeft: "2px solid #00ff41" }}>
+                            {JSON.stringify(dataObj.rows, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
